@@ -67,10 +67,22 @@ def main():
 
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
+        # 智能识别中文/英文列名，统一映射为代码使用的标准列
+        column_mapping = {
+            '日期': 'date', '时间': 'date', '订单日期': 'date', '下单时间': 'date',
+            '销售额': 'sales', '销量': 'sales', '金额': 'sales', '营收': 'sales',
+            '利润': 'profit', '利润额': 'profit',
+            '地区': 'region', '区域': 'region', '省份': 'region', '城市': 'region', '门店': 'region',
+            '产品': 'product', '商品': 'product', '品类': 'product', '商品名称': 'product',
+        }
+        df = df.rename(columns={c: column_mapping[c] for c in df.columns if c in column_mapping})
         # 自动转换日期列格式（如果存在）
-        for col in df.columns:
-            if 'date' in col.lower() or '日期' in col:
-                df[col] = pd.to_datetime(df[col], errors='coerce')
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        # 提示缺失的关键列
+        missing = [c for c in ['date', 'sales', 'region', 'product'] if c not in df.columns]
+        if missing:
+            st.sidebar.warning(f"你的数据缺少这些列，相关图表可能不显示：{', '.join(missing)}")
     else:
         st.sidebar.info("未上传文件时，显示自动生成的示例数据")
         df = load_sample_data()
