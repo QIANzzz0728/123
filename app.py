@@ -58,8 +58,23 @@ def main():
     st.title("📊 Sales Analytics Dashboard")
     st.markdown("---")
     
-    # Load data
-    df = load_sample_data()
+    # Load data: 优先使用用户上传的CSV，否则用示例数据
+    st.sidebar.header("📂 数据来源")
+    uploaded_file = st.sidebar.file_uploader(
+        "上传你的销售数据（CSV 文件）",
+        type=["csv"]
+    )
+
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        # 自动转换日期列格式（如果存在）
+        for col in df.columns:
+            if 'date' in col.lower() or '日期' in col:
+                df[col] = pd.to_datetime(df[col], errors='coerce')
+    else:
+        st.sidebar.info("未上传文件时，显示自动生成的示例数据")
+        df = load_sample_data()
+
     metrics = calculate_metrics(df)
     
     # Sidebar filters
