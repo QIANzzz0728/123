@@ -21,8 +21,11 @@ def load_sample_data():
 
 def calculate_metrics(df):
     """Calculate key business metrics"""
-    total_sales = df['sales'].sum()
-    avg_profit_margin = (df['profit'].sum() / df['sales'].sum()) * 100
+    total_sales = df['sales'].sum() if 'sales' in df.columns else 0
+    if 'profit' in df.columns and total_sales != 0:
+        avg_profit_margin = (df['profit'].sum() / total_sales) * 100
+    else:
+        avg_profit_margin = 0
     total_transactions = len(df)
     
     return {
